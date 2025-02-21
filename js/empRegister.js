@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("registerForm");
     const errorMsg = document.createElement("p");
-    
+
     // Error message styling
     errorMsg.style.color = "red";
     errorMsg.style.fontWeight = "bold";
@@ -19,19 +19,17 @@ document.addEventListener("DOMContentLoaded", function () {
             department: Array.from(document.querySelectorAll("input[type='checkbox']:checked"))
                 .map(input => input.value),
             salary: document.querySelector("select").value,
-            startDate: {
-                day: document.querySelector(".date-select select:nth-child(1)").value,
-                month: document.querySelector(".date-select select:nth-child(2)").value,
-                year: document.querySelector(".date-select select:nth-child(3)").value
-            },
+            startDate: `${document.querySelector(".date-select select:nth-child(1)").value} / 
+                        ${document.querySelector(".date-select select:nth-child(2)").value} / 
+                        ${document.querySelector(".date-select select:nth-child(3)").value}`,
             notes: document.querySelector("textarea").value.trim()
         };
 
         // Validation: Check if all required fields are filled
         if (!employeeData.name || !employeeData.profileImage || !employeeData.gender || 
             employeeData.department.length === 0 || employeeData.salary === "Select Salary" || 
-            employeeData.startDate.day === "Day" || employeeData.startDate.month === "Month" || 
-            employeeData.startDate.year === "Year") {
+            employeeData.startDate.includes("Day") || employeeData.startDate.includes("Month") || 
+            employeeData.startDate.includes("Year")) {
 
             errorMsg.textContent = "⚠ Please fill out all required fields before submitting.";
             errorMsg.style.display = "block";
@@ -40,12 +38,26 @@ document.addEventListener("DOMContentLoaded", function () {
             errorMsg.style.display = "none"; 
         }
 
-        // Log the object in the console
-        console.log("Employee Data Submitted: ", employeeData);
+        // Retrieve existing employees from localStorage
+        let employees = JSON.parse(localStorage.getItem("employees")) || [];
 
-        // Store data in Local Storage (optional)
-        localStorage.setItem("employeeData", JSON.stringify(employeeData));
+        // Check if it's an edit or new entry
+        let editIndex = localStorage.getItem("editEmployeeIndex");
+        if (editIndex !== null) {
+            employees[editIndex] = employeeData; // Update the existing record
+            localStorage.removeItem("editEmployeeIndex"); // Remove edit index after update
+        } else {
+            employees.push(employeeData); // Add new employee
+        }
 
-        alert("Form submitted successfully! Check the console for data.");
+        // Save updated employees list
+        localStorage.setItem("employees", JSON.stringify(employees));
+
+        // Reset the form
+        form.reset();
+
+        // Redirect to dashboard.html after successful submission
+        alert("Employee added successfully!");
+        window.location.href = "http://127.0.0.1:5500/pages/empDashboard.html";
     });
 });
